@@ -17,367 +17,450 @@
 
 package com.legeriti.ofbizify.example.client;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DecoratedTabPanel;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.client.ui.HTMLTable.Cell;
 import com.legeriti.ofbizify.gwt.gwtrpc.rpc.client.GwtRpcService;
 import com.legeriti.ofbizify.gwt.gwtrpc.rpc.client.GwtRpcServiceAsync;
 import com.legeriti.ofbizify.gwt.gwtrpc.rpc.client.util.ServiceUtil;
-import com.legeriti.ofbizify.gwt.gwtrpc.rpc.client.util.WidgetUtil;
 
-/**
- * Entry point classes define <code>onModuleLoad()</code>.
- */
 public class Ofbizifyexample implements EntryPoint {
 	
-	HashMap<String, String> formData = new HashMap<String, String>();
-	
-	String partyId = "DemoCustomer";
-	String CONTEXT_URL = "/ofbizifyexample/control/";
-	
+	int GROOVY = 1;
+	int JAVA = 2;
+	int SERVICE = 3;
+
 	GwtRpcServiceAsync gwtrcpService = GWT.create(GwtRpcService.class);
 	ServiceDefTarget endpoint = (ServiceDefTarget) gwtrcpService;
 	
-	private DockPanel mainPanel;
+	String CONTEXT_URL = "/ofbizifyexample/control/";
 	
-	//start - form fields
-	private TextBox name = new TextBox();
-	private TextBox email = new TextBox();
-	private ListBox country = new ListBox();
-	private ListBox state = new ListBox();
-	private TextBox mobile = new TextBox();
-	private TextBox phone = new TextBox();
+	//for groovy services
+	String GROOVY_CREATE_USER_DETAILS = CONTEXT_URL + "groovyCreateUserDetails";
+	String GROOVY_GET_USER_DETAILS = CONTEXT_URL + "groovyGetUserDetails";
+	
+	String JAVA_CREATE_USER_DETAILS = CONTEXT_URL + "javaCreateUserDetails";
+	String JAVA_GET_USER_DETAILS = CONTEXT_URL + "javaGetUserDetails";
+	
+	String SERVICE_CREATE_USER_DETAILS = CONTEXT_URL + "serviceCreateUserDetails";
+	String SERVICE_GET_USER_DETAILS = CONTEXT_URL + "serviceGetUserDetails";
 
-	private Hidden emailContactMechId = new Hidden();
-	private Hidden addressContactMechId = new Hidden();
-	private Hidden phoneContactMechId = new Hidden();
-	private Hidden mobileContactMechId = new Hidden();
-	//end - form fields
+	private DockPanel mainPanel;
+	private DecoratedTabPanel tabPanel = new DecoratedTabPanel();
+
+	private FlexTable dataTable = new FlexTable();
 	
-	//start - table fields
-	final FlexTable customerTable = new FlexTable();
-	//end - table fields
-	
+	//for groovy
+	TextBox gFirstName = new TextBox();
+	TextBox gLastName = new TextBox();
+	TextBox gAddress = new TextBox();
+
+	//for java
+	TextBox jFirstName = new TextBox();
+	TextBox jLastName = new TextBox();
+	TextBox jAddress = new TextBox();
+
+	//for services
+	TextBox sFirstName = new TextBox();
+	TextBox sLastName = new TextBox();
+	TextBox sAddress = new TextBox();
+
 	public Ofbizifyexample() {
 		
 		mainPanel = new DockPanel();
 		mainPanel.setStyleName("mainPanel");
-	    mainPanel.setSpacing(0);
-		mainPanel.setHorizontalAlignment(DockPanel.ALIGN_CENTER);
-		mainPanel.setVerticalAlignment(DockPanel.ALIGN_TOP);
 		
-		//Widget headerPanel = new Label("Header Panel");
+		mainPanel.setWidth("100%");
+		mainPanel.setHeight(Window.getClientHeight()+"px");
+
 		HorizontalPanel headerPanel = new HorizontalPanel();
 		mainPanel.add(headerPanel, DockPanel.NORTH);
 
-		headerPanel.add(createTitle("ofbizify - Ajaxifying Ofbiz, using GWT", false));
+		headerPanel.setStyleName("fullSize");
+		Widget title = createTitle("ofbizify - Ajaxifying OFBiz, using GWT", false);
+		headerPanel.add(title);
 
-		//Widget footerPanel = new Label("Footer Panel");
 		VerticalPanel footerPanel = new VerticalPanel();
-		footerPanel.setStyleName("centerPanel");
+		//footerPanel.setStyleName("centerPanel");
 		mainPanel.add(footerPanel, DockPanel.SOUTH);
-		
-		//rightPanel = createRightPanel();
-		//mainPanel.add(rightPanel, DockPanel.EAST);
 
-		//leftPanel = createLeftPanel();
-		//mainPanel.add(leftPanel, DockPanel.WEST);
-
-		//--
 		VerticalPanel centerPanel = new VerticalPanel();
 		centerPanel.setStyleName("centerPanel");
 		mainPanel.add(centerPanel, DockPanel.CENTER);
-		centerPanel.add(createForm());
-		//--
+
+		centerPanel.add(tabPanel);
+		
+		createTabs();
+		
+		VerticalPanel dataPanel = new VerticalPanel();
+		dataPanel.setSpacing(20);
+
+		ScrollPanel scroll = new ScrollPanel(dataPanel);
+		centerPanel.add(scroll);
+		
+		dataPanel.add(dataTable);
+		
+		HTML hr = new HTML("<hr/>");
+		dataPanel.add(hr);
+
+		createDataTable();
 
 		//--
-		footerPanel.add(createTable());
+		//footerPanel.add(createTable());
 		//--
 		
 		mainPanel.setCellWidth(headerPanel, "100%");
-		mainPanel.setCellHeight(headerPanel, "40%");
+		mainPanel.setCellHeight(headerPanel, "5%");
 
-		//mainPanel.setCellWidth(rightPanel, "12%");
-		//mainPanel.setCellHeight(rightPanel, "55%");
-		
-		//mainPanel.setCellWidth(leftPanel, "12%");
-		//mainPanel.setCellHeight(leftPanel, "55%");
-		
-		mainPanel.setCellWidth(centerPanel, "76%");
-		mainPanel.setCellHeight(centerPanel, "55%");
+		mainPanel.setCellWidth(centerPanel, "100%");
+		mainPanel.setCellHeight(centerPanel, "90%");
 		
 		mainPanel.setCellWidth(footerPanel, "100%");
 		mainPanel.setCellHeight(footerPanel, "5%");
 		
+		getUserDetails(GROOVY);
+
+	}
+
+	private void createTabs() {
+
+		tabPanel.setStyleName("fullSize");
+	    tabPanel.setAnimationEnabled(true);
+
+	    VerticalPanel groovyPanel = new VerticalPanel();
+	    tabPanel.add(groovyPanel, "Groovy");
+	    
+	    groovyPanel.add(createGroovyForm());
+	    
+
+	    VerticalPanel javaPanel = new VerticalPanel();
+	    tabPanel.add(javaPanel, "Java");
+	    
+	    javaPanel.add(createJavaForm());
+	    
+	    VerticalPanel servicePanel = new VerticalPanel();
+	    tabPanel.add(servicePanel, "Service");
+
+	    servicePanel.add(createServiceForm());
+	    
+	    tabPanel.selectTab(0);
 	}
 	
-	public Widget createTable() {
+	private void createDataTable() {
 		
-		customerTable.setTitle("Customer List (click on the record to update)");
+		dataTable.setHTML(0, 0, "<b>First Name</b>");
+		dataTable.setHTML(0, 1, "&nbsp;&nbsp;&nbsp;&nbsp;");
+		dataTable.setHTML(0, 2, "<b>Last Name</b>");
+		dataTable.setHTML(0, 3, "&nbsp;&nbsp;&nbsp;&nbsp;");
+		dataTable.setHTML(0, 4, "<b>Address</b>");
+	}
+
+	private boolean validateForm(int type) {
+
+		String strFirstName = null;
+		String strLastName = null;
+		String strAddress = null;
+
+		if(type == 1) {
+			strFirstName = gFirstName.getText().trim();
+			strLastName = gLastName.getText().trim();
+			strAddress = gAddress.getText().trim();
+		} else if(type == 2) {
+			strFirstName = jFirstName.getText().trim();
+			strLastName = jLastName.getText().trim();
+			strAddress = jAddress.getText().trim();
+		} else if(type == 3) {
+			strFirstName = sFirstName.getText().trim();
+			strLastName = sLastName.getText().trim();
+			strAddress = sAddress.getText().trim();
+		}
+
+		if(strFirstName.length() == 0) {
+			Window.alert("Please enter First Name");
+			return false;
+		}
 		
-		customerTable.addClickHandler(
-    			new ClickHandler() {
-
-    				public void onClick(ClickEvent event) {
-
-						FlexTable ft = (FlexTable) event.getSource();
-						Cell c = ft.getCellForEvent(event);
-
-						if(c != null) {
-
-							 int cellIndex = c.getCellIndex();
-							 int rowIndex = c.getRowIndex();
-
-							 if(cellIndex == 6) {
-
-							 } else {
-								 	setFormData(formData);
-								 	getStates();
-							 }
-						 }
-					}
-    			});
-
-		customerTable.setBorderWidth(1);
+		if(strLastName.trim().length() == 0) {
+			Window.alert("Please enter Last Name");
+			return false;
+		}
 		
-		customerTable.setText(0, 0, "Name");
-		customerTable.setText(0, 1, "Email");
-		customerTable.setText(0, 2, "Country");
-		customerTable.setText(0, 3, "State");
-		customerTable.setText(0, 4, "Mobile");
-		customerTable.setText(0, 5, "Phone");
-		customerTable.setText(0, 6, "");
-
-		VerticalPanel panel = new VerticalPanel();
-		panel.setWidth("100%");
-		panel.add(createTitle("Customer List (click on the record to update)", true));
-		panel.add(customerTable);
+		if(strAddress.trim().length() == 0) {
+			Window.alert("Please enter Address");
+			return false;
+		}
 		
-		return panel;
+		return true;
 	}
 	
-	public Widget createForm() {
-
+	private Widget createGroovyForm() {
+		
 		FlexTable table = new FlexTable();
+		table.setStyleName("fullSize");
 
-		Label nameLbl = new Label("Name : ");
-		table.setWidget(1, 0, nameLbl);
+		FlexTable formTable = new FlexTable();
+		formTable.setText(0, 0, "First Name");
+		formTable.setText(1, 0, "Last Name");
+		formTable.setText(2, 0, "Address");
 
-		table.setWidget(1, 1, name);
+		formTable.setWidget(0, 1, gFirstName);
+		formTable.setWidget(1, 1, gLastName);
+		formTable.setWidget(2, 1, gAddress);
 		
-		Label emailLbl = new Label("Email Address : ");
-		table.setWidget(2, 0, emailLbl);
+		Button btnSubmit = new Button("<b>Create</b>");
+		//btnSubmit.setStyleName("saveChangesButtonStyle");
 		
+		Button btnClear = new Button("<b>Clear</b>");
+		//btnClear.setStyleName("backButtonStyle");
 		
-		table.setWidget(2, 1, email);
-		
-		Label countryLbl = new Label("Country : ");
-		table.setWidget(3, 0, countryLbl);
-		table.setWidget(3, 1, country);
-
-		ChangeHandler countryChangeHandler = new ChangeHandler() {
-
-			public void onChange(ChangeEvent event) {
-				getStates();
-			}
-		};
-		
-		country.addChangeHandler(countryChangeHandler);
-
-		Label curLocLbl = new Label("Current Location : ");
-		table.setWidget(4, 0, curLocLbl);
-
-		table.setWidget(4, 1, state);
-		state.addItem("select", "select");
-
-		Label conNosLbl = new Label("Contact Numbers: ");
-		table.setWidget(5, 0, conNosLbl);
-		
-		Label conNosLblText = new Label("Out of two phone numbers, one is compulsory.");
-		table.setWidget(5, 1, conNosLblText);
-		
-		Label mobileLbl = new Label("Mobile : ");
-		table.setWidget(6, 0, mobileLbl);
-		
-		table.setWidget(6, 1, mobile);
-		
-		Label phoneLbl = new Label("Phone : ");
-		table.setWidget(7, 0, phoneLbl);
-
-		table.setWidget(7, 1, phone);
-
-		final Button saveButton = new Button("Save Changes");
-		saveButton.setStyleName("saveChangesButtonStyle");
-		
-		saveButton.addClickHandler(new ClickHandler() {
-
+		btnClear.addClickHandler(new ClickHandler() {
+			
+			@Override
 			public void onClick(ClickEvent event) {
 
-				//you can do the validation over here
-				boolean status = false;
+				gFirstName.setText("");
+				gLastName.setText("");
+				gAddress.setText("");
+			}
+		});
+
+		formTable.setWidget(3, 0, btnSubmit);
+		formTable.setWidget(3, 1, btnClear);
+		
+		btnSubmit.addClickHandler(new ClickHandler() {
+
+			public void onClick(ClickEvent event) {
 				
-				if(addressContactMechId.getValue().isEmpty() || emailContactMechId.getValue().isEmpty() ||
-						mobileContactMechId.getValue().isEmpty() || phoneContactMechId.getValue().isEmpty()) {
-
-					Window.alert("You need to click the record, you want to update, from the table below");
-					status = false;
-					return;
-				}
+				if(validateForm(GROOVY)) {
+					
+					//start - saving form data
+					showLoadingMessage("[GROOVY] saving user details ....");
 				
-				if(name.getText().isEmpty() || email.getText().isEmpty() || 
-						country.getValue(country.getSelectedIndex()).equals("select") || 
-						state.getValue(state.getSelectedIndex()).equals("select") ||
-						mobile.getText().isEmpty() || phone.getText().isEmpty()) {
-					Window.alert("Please fill all the customer details");
-					status = false;
-					return;
-				} else {
-					status = true;
-				}
+					HashMap<String, String> parameters = getGroovyFormData();
 
-				if(status) {
+					AsyncCallback<HashMap<String, Object>> callback = new AsyncCallback<HashMap<String, Object>>() {
 					
+						public void onFailure(Throwable caught) {
+							Window.alert("SERVER_ERROR " + caught.toString());
+						}
 					
-					String command = saveButton.getText();
-					
-					if("Create".equals(command)) {
-					} else
-					if("Save Changes".equals(command)){
-						
-						//start - save contact details
-						showLoadingMessage("saving contact details ....");
-					
-						HashMap<String, String> parameters = getFormData();
-					
-						AsyncCallback<HashMap<String, Object>> callback = new AsyncCallback<HashMap<String, Object>>() {
-						
-							public void onFailure(Throwable caught) {
-							
-								Window.alert("SERVER_ERROR " + caught.toString());
-							}
-						
-							public void onSuccess(HashMap<String, Object> result) {
+						public void onSuccess(HashMap<String, Object> result) {
 
-								if(ServiceUtil.isSuccess(result)) {
-
-									HashMap<String, String> updateResult = (HashMap<String, String>)result.get("result");
-	
-									String personalDetailsUpdate = updateResult.get("personalDetailsUpdate");
-									
-									String emailUpdate = updateResult.get("emailUpdate");
-									String emailContactMechId = updateResult.get("emailContactMechId");
-									
-									String addressUpdate = updateResult.get("addressUpdate");
-									String addressContactMechId = updateResult.get("addressContactMechId");
-									
-									String mobileUpdate = updateResult.get("mobileUpdate");
-									String mobileContactMechId = updateResult.get("mobileContactMechId");
-									
-									String phoneUpdate = updateResult.get("phoneUpdate");
-									String phoneContactMechId = updateResult.get("phoneContactMechId");
+							if(ServiceUtil.isSuccess(result)) {
 								
-									if(personalDetailsUpdate.equals("success") && emailUpdate.equals("success") &&
-										addressUpdate.equals("success") && mobileUpdate.equals("success") && phoneUpdate.equals("success")) {
-										
-										HashMap<String, String> fields = new HashMap<String, String>();
-										fields.put("emailContactMechId", emailContactMechId);
-										fields.put("addressContactMechId", addressContactMechId);
-										fields.put("mobileContactMechId", mobileContactMechId);
-										fields.put("phoneContactMechId", phoneContactMechId);
-										
-										setHiddenFields(fields);
-	
-										hideLoadingMessage();
-										
-										getContactDetails();
-										
-									} else {
-										//display some message to the user
-									}
-								}
+								gFirstName.setText("");
+								gLastName.setText("");
+								gAddress.setText("");
+
+								hideLoadingMessage();
+								Window.alert("User created");
+								getUserDetails(GROOVY);
+
+							} else {
+								Window.alert("Error calling groovy : " + result);
 							}
+						}
 					};
-					
-					String SAVE_CONTACT_DETAILS = CONTEXT_URL + "saveContactDetails";
-					endpoint.setServiceEntryPoint(SAVE_CONTACT_DETAILS);
+
+					endpoint.setServiceEntryPoint(GROOVY_CREATE_USER_DETAILS);
 					gwtrcpService.processRequest(parameters, callback);
-					//end - save contact details
-				}
+					//end - saving form data
 
 				}
 			}
 		});
 
-		Button cancelButton = new Button("Clear");
-		cancelButton.setStyleName("backButtonStyle");
+		table.setWidget(0, 0, formTable);
 
-		HorizontalPanel btnPanel = new HorizontalPanel();
-		btnPanel.add(saveButton);
-		btnPanel.add(cancelButton);
-		//
-		
-		table.setWidget(8, 1, btnPanel);
+		return table;
+	}
 
-		VerticalPanel panel = new VerticalPanel();
-		panel.setWidth("100%");
-		panel.add(createTitle("Customer Details", true));
+	private Widget createJavaForm() {
 		
-		HorizontalPanel hp = new HorizontalPanel();
-		hp.setWidth("100%");
-		panel.add(hp);
-		
-		hp.add(table);
-		
-		HTML msg = new HTML();
-		msg.setHTML("<h3>This example demonstrates the integration of OFBiz with GWT (using GWT-RPC protocol), <br/>" +
-					"because of time constraint I could only provide the read & update functionality,<br/>" +
-					"but will be providing the create & delete functionality soon." +
-					"<br/>" +
-					"It would have been more simple if I had created a custom table and did CRUD operations on it,<br/>" +
-					"but to show that already existing services can be called by simply providing a simple wrapper around them, I choose this way." +
-					"<br/>" +
-					"I have used groovy scripts as services but you can choose groovy, java events or even services</h3>");
-		hp.add(msg);
-		//
-		
-		//hidden fields
-		panel.add(emailContactMechId);
-		panel.add(addressContactMechId);
-		panel.add(phoneContactMechId);
-		panel.add(mobileContactMechId);
-		//hidden fields
+		FlexTable table = new FlexTable();
+		table.setStyleName("fullSize");
 
-		//gwtrpc call to get the countries
-		getContactDetails();
-		getCountries();
-		//getStates();
+		FlexTable formTable = new FlexTable();
+		formTable.setText(0, 0, "First Name");
+		formTable.setText(1, 0, "Last Name");
+		formTable.setText(2, 0, "Address");
 
-		return panel;
+		formTable.setWidget(0, 1, jFirstName);
+		formTable.setWidget(1, 1, jLastName);
+		formTable.setWidget(2, 1, jAddress);
+		
+		Button btnSubmit = new Button("<b>Create</b>");
+		//btnSubmit.setStyleName("saveChangesButtonStyle");
+		
+		Button btnClear = new Button("<b>Clear</b>");
+		//btnClear.setStyleName("backButtonStyle");
+		
+		btnClear.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+
+				jFirstName.setText("");
+				jLastName.setText("");
+				jAddress.setText("");
+			}
+		});
+
+		formTable.setWidget(3, 0, btnSubmit);
+		formTable.setWidget(3, 1, btnClear);
+		
+		btnSubmit.addClickHandler(new ClickHandler() {
+
+			public void onClick(ClickEvent event) {
+				
+				if(validateForm(JAVA)) {
+					
+					//start - saving form data
+					showLoadingMessage("[JAVA] saving user details ....");
+				
+					HashMap<String, String> parameters = getJavaFormData();
+
+					AsyncCallback<HashMap<String, Object>> callback = new AsyncCallback<HashMap<String, Object>>() {
+					
+						public void onFailure(Throwable caught) {
+							Window.alert("SERVER_ERROR " + caught.toString());
+						}
+					
+						public void onSuccess(HashMap<String, Object> result) {
+
+							if(ServiceUtil.isSuccess(result)) {
+
+								jFirstName.setText("");
+								jLastName.setText("");
+								jAddress.setText("");
+								
+								hideLoadingMessage();
+								Window.alert("User created");
+								getUserDetails(JAVA);
+
+							} else {
+								Window.alert("Error calling java event : " + result);
+							}
+						}
+					};
+
+					endpoint.setServiceEntryPoint(JAVA_CREATE_USER_DETAILS);
+					gwtrcpService.processRequest(parameters, callback);
+					//end - saving form data
+				}
+			}
+		});
+
+		table.setWidget(0, 0, formTable);
+		
+		table.setHTML(1, 0, "<hr/>");
+
+		return table;
+	}
+	
+	private Widget createServiceForm() {
+		
+		FlexTable table = new FlexTable();
+		table.setStyleName("fullSize");
+
+		FlexTable formTable = new FlexTable();
+		formTable.setText(0, 0, "First Name");
+		formTable.setText(1, 0, "Last Name");
+		formTable.setText(2, 0, "Address");
+
+		formTable.setWidget(0, 1, sFirstName);
+		formTable.setWidget(1, 1, sLastName);
+		formTable.setWidget(2, 1, sAddress);
+		
+		Button btnSubmit = new Button("<b>Create</b>");
+		//btnSubmit.setStyleName("saveChangesButtonStyle");
+		
+		Button btnClear = new Button("<b>Clear</b>");
+		//btnClear.setStyleName("backButtonStyle");
+		
+		btnClear.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+
+				sFirstName.setText("");
+				sLastName.setText("");
+				sAddress.setText("");
+			}
+		});
+
+		formTable.setWidget(3, 0, btnSubmit);
+		formTable.setWidget(3, 1, btnClear);
+		
+		btnSubmit.addClickHandler(new ClickHandler() {
+
+			public void onClick(ClickEvent event) {
+				
+				if(validateForm(SERVICE)) {
+					
+					//start - saving form data
+					showLoadingMessage("[SERVICE] saving user details ....");
+				
+					HashMap<String, String> parameters = getServiceFormData();
+
+					AsyncCallback<HashMap<String, Object>> callback = new AsyncCallback<HashMap<String, Object>>() {
+					
+						public void onFailure(Throwable caught) {
+							Window.alert("SERVER_ERROR " + caught.toString());
+						}
+					
+						public void onSuccess(HashMap<String, Object> result) {
+
+							if(ServiceUtil.isSuccess(result)) {
+
+								sFirstName.setText("");
+								sLastName.setText("");
+								sAddress.setText("");
+								
+								hideLoadingMessage();
+								Window.alert("User created");
+								getUserDetails(SERVICE);
+
+							} else {
+								Window.alert("Error calling service : " + result);
+							}
+						}
+					};
+
+					endpoint.setServiceEntryPoint(SERVICE_CREATE_USER_DETAILS);
+					gwtrcpService.processRequest(parameters, callback);
+					//end - saving form data
+				}
+			}
+		});
+
+		table.setWidget(0, 0, formTable);
+		
+		table.setHTML(1, 0, "<hr/>");
+
+		return table;
 	}
 
 	public void onModuleLoad() {
@@ -386,8 +469,8 @@ public class Ofbizifyexample implements EntryPoint {
 	
 	public Widget createTitle(String text, boolean logo) {
 		
-		Image titleImg = new Image("images/user_reg_4.jpeg");
-		titleImg.setStyleName("imgStyle");
+		//Image titleImg = new Image("images/user_reg_4.jpeg");
+		//titleImg.setStyleName("imgStyle");
 		//titleImg.setSize("30px", "30px");
 
 		Label title = new Label(text);
@@ -398,46 +481,20 @@ public class Ofbizifyexample implements EntryPoint {
 		table.setWidth("100%");
 
 		if(logo) {
-			table.getFlexCellFormatter().setWidth(0, 0, "20px");
-			table.setWidget(0, 0, titleImg);
+			//table.getFlexCellFormatter().setWidth(0, 0, "20px");
+			//table.setWidget(0, 0, titleImg);
 		}
 		
-		table.setWidget(0, 1, title);
+		//table.setWidget(0, 1, title);
 		
+		table.setWidget(0, 0, title);
 		table.setBorderWidth(0);
 		
 		return table; 
 	}
 	
 	//start - util methods
-	public void setHiddenFields(HashMap<String, String> fields) {
 
-		emailContactMechId.setValue(fields.get("emailContactMechId"));
-		addressContactMechId.setValue(fields.get("addressContactMechId"));
-		phoneContactMechId.setValue(fields.get("phoneContactMechId"));
-		mobileContactMechId.setValue(fields.get("mobileContactMechId"));
-	}
-	
-	public void setCountries(List<HashMap<String, String>> countries) {
-		
-		if(country.getSelectedIndex() == -1) {
-			WidgetUtil.fillListBox(country, "geoId", "geoName", countries);
-		} else {
-			String countryGeoId = country.getValue(country.getSelectedIndex());
-			WidgetUtil.fillListBox(country, countryGeoId, "geoId", "geoName", countries);
-		}
-	}
-	
-	public void setStates(List<HashMap<String, String>> states) {
-
-		if(state.getSelectedIndex() == -1) {
-			WidgetUtil.fillListBox(state, "geoId", "geoName", states);
-		} else {
-			String stateProvinceGeoId = state.getValue(state.getSelectedIndex());
-			WidgetUtil.fillListBox(state, stateProvinceGeoId, "geoId", "geoName", states);
-		}
-	}
-	
 	private PopupPanel popup = new PopupPanel(false, true);
 	
 	public void showLoadingMessage(String msg) {
@@ -460,77 +517,55 @@ public class Ofbizifyexample implements EntryPoint {
 		popup.hide();
 	}
 	
-	public HashMap<String, String> getFormData() {
+	public HashMap<String, String> getGroovyFormData() {
 
 		HashMap<String, String> formData = new HashMap<String, String>();
-		formData.put("firstName", name.getValue());
-		
-		formData.put("emailContactMechId", emailContactMechId.getValue());
-		formData.put("emailId", email.getValue());
-		
-		formData.put("addressContactMechId", addressContactMechId.getValue());
-		
-		if(state.getSelectedIndex() != -1) {
-			formData.put("stateProvinceGeoId", state.getValue(state.getSelectedIndex()));
-		}
-		
-		if(country.getSelectedIndex() != -1) {
-			formData.put("countryGeoId", country.getValue(country.getSelectedIndex()));
-		}
-
-		formData.put("phoneContactMechId", phoneContactMechId.getValue());
-		formData.put("phoneNo", phone.getValue());
-		
-		formData.put("mobileContactMechId", mobileContactMechId.getValue());
-		formData.put("mobileNo", mobile.getValue());
+		formData.put("firstName", gFirstName.getValue());
+		formData.put("lastName", gLastName.getValue());
+		formData.put("address", gAddress.getValue());
 
 		return formData;
 	}
 	
-	public void setFormData(HashMap<String, String> formData) {
-		
-		name.setText(formData.get("firstName"));
-		
-		emailContactMechId.setValue(formData.get("emailContactMechId"));
-		email.setText(formData.get("emailId"));
+	public HashMap<String, String> getJavaFormData() {
 
-		addressContactMechId.setValue(formData.get("addressContactMechId"));
+		HashMap<String, String> formData = new HashMap<String, String>();
+		formData.put("firstName", jFirstName.getValue());
+		formData.put("lastName", jLastName.getValue());
+		formData.put("address", jAddress.getValue());
 
-		if(state.getItemCount() == 1 && state.getValue(0).equals("select")) {
-			state.addItem(formData.get("stateProvinceGeoName"), formData.get("stateProvinceGeoId"));
-			WidgetUtil.setListBoxSelectedIndex(state, formData.get("stateProvinceGeoId"));
-		} else {
-			WidgetUtil.setListBoxSelectedIndex(state, formData.get("stateProvinceGeoId"));
-		}
+		return formData;
+	}
+	
+	public HashMap<String, String> getServiceFormData() {
 
-		if(country.getItemCount() == 1 && country.getValue(0).equals("select")) {
-			country.addItem(formData.get("countryGeoName"), formData.get("countryGeoId"));
-			WidgetUtil.setListBoxSelectedIndex(country, formData.get("countryGeoId"));
-		} else {
-			WidgetUtil.setListBoxSelectedIndex(country, formData.get("countryGeoId"));
-		}
+		HashMap<String, String> formData = new HashMap<String, String>();
+		formData.put("firstName", sFirstName.getValue());
+		formData.put("lastName", sLastName.getValue());
+		formData.put("address", sAddress.getValue());
 
-		phoneContactMechId.setValue(formData.get("phoneContactMechId"));
-		phone.setText(formData.get("phoneNo"));
-		
-		mobileContactMechId.setValue(formData.get("mobileContactMechId"));
-		mobile.setText(formData.get("mobileNo"));
+		return formData;
 	}
 	//end - util methods
 	
 	//start - code for gwtrpc calls
-	private void getContactDetails() {
+	private void getUserDetails(int type) {
 
-		showLoadingMessage("loading contact details ....");
+		if(type == 1) {
+			showLoadingMessage("[GROOVY] loading user details ....");
+		} else if(type == 2) {
+			showLoadingMessage("[JAVA] loading user details ....");
+		} else if(type == 3) {
+			showLoadingMessage("[SERVICE] loading user details ....");
+		}
 
-		//start - get contact details
+		//start - get user details
 		HashMap<String, String> parameters = new HashMap<String, String>();
-		parameters.put("userName", partyId);
+		parameters.put("fields", "userId,firstName,lastName,address");
 
 		AsyncCallback<HashMap<String, Object>> callback = new AsyncCallback<HashMap<String, Object>>() {
 			
 			public void onFailure(Throwable caught) {
-				
 				Window.alert("SERVER_ERROR " + caught.toString());
 			}
 			
@@ -538,117 +573,45 @@ public class Ofbizifyexample implements EntryPoint {
 
 				if(ServiceUtil.isSuccess(result)) {
 
-					HashMap<String, String> res = (HashMap<String, String>)result.get("result");
-
-					//HashMap<String, String> formData = new HashMap<String, String>();
-					formData.put("firstName", res.get("firstName"));
-					
-					formData.put("emailContactMechId", res.get("emailContactMechId"));
-					formData.put("emailId", res.get("emailId"));
-					
-					formData.put("addressContactMechId", res.get("addressContactMechId"));
-					formData.put("stateProvinceGeoId", res.get("stateProvinceGeoId"));
-					formData.put("stateProvinceGeoName", res.get("stateProvinceGeoName"));
-					formData.put("countryGeoId", res.get("countryGeoId"));
-					formData.put("countryGeoName", res.get("countryGeoName"));
-					
-					formData.put("phoneContactMechId", res.get("phoneContactMechId"));
-					formData.put("phoneNo", res.get("phoneNo"));
-					
-					formData.put("mobileContactMechId", res.get("mobileContactMechId"));
-					formData.put("mobileNo", res.get("mobileNo"));
-
-					//setFormData(formData);
-					
-					//getStates();
-					
-					//
-					customerTable.setText(1, 0, formData.get("firstName"));
-					customerTable.setText(1, 1, formData.get("emailId"));
-					customerTable.setText(1, 2, formData.get("countryGeoName"));
-					customerTable.setText(1, 3, formData.get("stateProvinceGeoName"));
-					customerTable.setText(1, 4, formData.get("phoneNo"));
-					customerTable.setText(1, 5, formData.get("mobileNo"));
-					Button btnDelete = new Button("Delete");
-					btnDelete.setEnabled(false);
-					customerTable.setWidget(1, 6, btnDelete);
-					//
+					//HashMap<String, String> users = (HashMap<String, String>)result.get("result");
+					ArrayList<HashMap<String, String>> users = (ArrayList<HashMap<String, String>>)result.get("payload");
 
 					hideLoadingMessage();
+
+					fillDataTable(users);
 				}
 			}
 		};
 
-		String GET_CONTACT_DETAILS = CONTEXT_URL + "getContactDetails";
-		endpoint.setServiceEntryPoint(GET_CONTACT_DETAILS);
+		if(type == 1) {
+			endpoint.setServiceEntryPoint(GROOVY_GET_USER_DETAILS);	
+		} else if(type == 2) {
+			endpoint.setServiceEntryPoint(JAVA_GET_USER_DETAILS);
+		} else if(type == 3) {
+			endpoint.setServiceEntryPoint(SERVICE_GET_USER_DETAILS);
+		}
+
 		gwtrcpService.processRequest(parameters, callback);
 		//end - get contact details
 	}
 	
-	private void getCountries() {
-
-		//start - for countries
-		HashMap<String, String> parameters = new HashMap<String, String>();
-		parameters.put("fields", "geoId,geoName");
-
-		AsyncCallback<HashMap<String, Object>> callback = new AsyncCallback<HashMap<String, Object>>() {
+	private void fillDataTable(ArrayList<HashMap<String, String>> users) {
+		
+		dataTable.clear();
+		
+		for(int i=0; i<users.size(); i++) {
+			HashMap<String, String> user = users.get(i);
 			
-			public void onFailure(Throwable caught) {
-				Window.alert("SERVER_ERROR " + caught.toString());
-			}
+			String userId = user.get("userId");
+			String firstName = user.get("firstName");
+			String lastName = user.get("lastName");
+			String address = user.get("address");
 			
-			public void onSuccess(HashMap<String, Object> result) {
-
-				if(ServiceUtil.isSuccess(result)) {
-					
-					if(result.get("result") instanceof List) {
-
-						List<HashMap<String, String>> countries = (List<HashMap<String, String>>)result.get("result");
-						setCountries(countries);
-					}
-				}
-			}
-		};
-
-		String GET_COUNTRIES = CONTEXT_URL + "countries";
-		endpoint.setServiceEntryPoint(GET_COUNTRIES);
-		gwtrcpService.processRequest(parameters, callback);
-		//end - for countries
-	}
-	
-	private void getStates() {
-
-		if(country.getSelectedIndex() != -1) {
-
-			//start - for states
-			HashMap<String, String> parameters = new HashMap<String, String>();
-			parameters.put("countryId", country.getValue(country.getSelectedIndex()));
-			parameters.put("fields", "geoId,geoName");
-	
-			AsyncCallback<HashMap<String, Object>> callback = new AsyncCallback<HashMap<String, Object>>() {
-				
-				public void onFailure(Throwable caught) {
-					Window.alert("SERVER_ERROR " + caught.toString());
-				}
-				
-				public void onSuccess(HashMap<String, Object> result) {
-	
-					if(ServiceUtil.isSuccess(result)) {
-						
-						if(result.get("result") instanceof List) {
-	
-							List<HashMap<String, String>> states = (List<HashMap<String, String>>)result.get("result");
-							setStates(states);
-						}
-					}
-				}
-			};
-	
-			String GET_STATES = CONTEXT_URL + "states";
-			endpoint.setServiceEntryPoint(GET_STATES);
-			gwtrcpService.processRequest(parameters, callback);
-			//end - for states
+			dataTable.setHTML(i+1, 0, firstName);
+			dataTable.setHTML(i+1, 2, lastName);
+			dataTable.setHTML(i+1, 4, address);
 		}
 	}
+
 	//end - code for gwtrpc calls
 }
