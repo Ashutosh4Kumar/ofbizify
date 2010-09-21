@@ -19,11 +19,9 @@
 package com.legeriti.ofbizify.gwt.gwtrpc.event;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,16 +31,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import javolution.util.FastMap;
-
 import org.ofbiz.base.util.Debug;
 import org.ofbiz.service.DispatchContext;
 import org.ofbiz.service.GenericServiceException;
 import org.ofbiz.service.LocalDispatcher;
 import org.ofbiz.service.ModelService;
-import org.ofbiz.webapp.control.RequestHandler;
 import org.ofbiz.webapp.control.ConfigXMLReader.Event;
 import org.ofbiz.webapp.control.ConfigXMLReader.RequestMap;
+import org.ofbiz.webapp.control.RequestHandler;
 import org.ofbiz.webapp.event.EventHandler;
 import org.ofbiz.webapp.event.EventHandlerException;
 
@@ -142,20 +138,20 @@ public class GwtRpcServiceEventHandler implements EventHandler {
             	throw new EventHandlerException("service model is null");
             }
             
-            List<String> implicitVariables = new ArrayList<String>();
+            /*List<String> implicitVariables = new ArrayList<String>();
             implicitVariables.add("userLogin");
             implicitVariables.add("timeZone");
-            implicitVariables.add("locale");
-            implicitVariables.add("responseMessage");
-            implicitVariables.add("successMessage");
-            implicitVariables.add("successMessageList");
-            implicitVariables.add("errorMessage");
-            implicitVariables.add("errorMessageList");
+            implicitVariables.add("locale");*/
+            //implicitVariables.add("responseMessage");
+            //implicitVariables.add("successMessage");
+            //implicitVariables.add("successMessageList");
+            //implicitVariables.add("errorMessage");
+            //implicitVariables.add("errorMessageList");
             
-            Set<String> outParams = model.getOutParamNames();
-            Iterator<String> iterOP = outParams.iterator();
+            //Set<String> outParams = model.getOutParamNames();
+            //Iterator<String> iterOP = outParams.iterator();
 
-            Map<String, Object> serviceResult = FastMap.newInstance(); 
+            /*Map<String, Object> serviceResult = new HashMap<String, Object>();
 
             while(iterOP.hasNext()) {
             	
@@ -174,10 +170,10 @@ public class GwtRpcServiceEventHandler implements EventHandler {
                 	
                 	//request.setAttribute("result", opValue);
             	}
-            }
+            }*/
 
-            if(serviceResult.size() == 0) {
-            	request.setAttribute("result", null);
+            /*if(serviceResult.size() == 0) {
+            	request.setAttribute("ofbizPayLoad", null);
             } else {
             	
             	if(serviceResult.size() == 1) {
@@ -190,25 +186,23 @@ public class GwtRpcServiceEventHandler implements EventHandler {
             			key = iter1.next();
             		}
             		
-            		request.setAttribute("result", serviceResult.get(key));
-            		
+            		request.setAttribute("ofbizPayLoad", serviceResult.get(key));
+
             	} else {
             		
-            		request.setAttribute("result", serviceResult);
+            		request.setAttribute("ofbizPayLoad", serviceResult);
             	}
-            }
+            }*/
             
-            Map<String, Object> resultMap = FastMap.newInstance();
-            resultMap.put(ModelService.RESPONSE_MESSAGE, ModelService.RESPOND_SUCCESS);
-            //result.put(ModelService.RESPONSE_MESSAGE, ModelService.RESPOND_ERROR);
-            resultMap.put("data", request.getAttribute("result"));
+            Map<String, Object> resultMap = (Map<String, Object>) request.getAttribute("result");
+            System.err.println("service resultMap -> " + resultMap);
 
             ServletContext sc = (ServletContext)request.getAttribute("servletContext");
         	RequestDispatcher rd = sc.getRequestDispatcher("/gwtrpc");
 
-        	request.setAttribute("result", resultMap);
+        	request.setAttribute("ofbizPayLoad", resultMap);
         	request.setAttribute("requestPayload", requestPayload);
-        	
+
         	try {
         		rd.forward(request, response);
         	} catch(IOException ioe) {
