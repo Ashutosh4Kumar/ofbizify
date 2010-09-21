@@ -368,7 +368,7 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
     	//String responseMessage = 
     	Object resultValue = result.get("payload");
     	if(Debug.infoOn()) {
-			Debug.logInfo("resultValue : " + resultValue, module);
+			Debug.logInfo("payload : " + resultValue, module);
 		}
 
     	if(resultValue != null) {
