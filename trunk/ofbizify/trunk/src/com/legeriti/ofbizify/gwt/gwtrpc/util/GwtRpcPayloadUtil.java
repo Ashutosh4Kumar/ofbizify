@@ -31,7 +31,6 @@ import org.ofbiz.service.ServiceUtil;
 public class GwtRpcPayloadUtil extends ServiceUtil {
 
     public static final String module = GwtRpcPayloadUtil.class.getName();
-    public static final String PAYLOAD = "payload";
 
     public static Map<String, Object> returnSuccess() {
         return returnMessage(ModelService.RESPOND_SUCCESS, null);
@@ -49,30 +48,25 @@ public class GwtRpcPayloadUtil extends ServiceUtil {
     
     public static Map<String, Object> returnSuccessWithPayload(Object payload, String successMessage) {
     	Map<String, Object> result = returnSuccess(successMessage);
-    	result.put(PAYLOAD, payload);
+    	result.put(GwtRpcPayload.PAYLOAD, payload);
         return result;
     }
     
     public static Map<String, Object> returnSuccessWithPayload(Object payload) {
-    	System.err.println("in GWT returnSuccess -> " + payload);
     	Map<String, Object> result = returnSuccess();
-    	System.err.println("in GWT returnSuccess -> result " + result);
-    	result.put(PAYLOAD, payload);
-    	System.err.println("in GWT returnSuccess -> payload " + result);
+    	result.put(GwtRpcPayload.PAYLOAD, payload);
         return result;
     }
     
     public static Map<String, Object> returnSuccessWithPayload(Object payload, List<String> successMessageList) {
     	Map<String, Object> result = returnSuccess(successMessageList);
-    	result.put(PAYLOAD, payload);
+    	result.put(GwtRpcPayload.PAYLOAD, payload);
         return result;
     }
     
     public static Map<String, Object> returnMessage(String code, String message) {
-    	
-    	System.err.println("in GWT returnMessage (overrided)");
-    	
-        //Map<String, Object> result = FastMap.newInstance();
+
+    	//Map<String, Object> result = FastMap.newInstance();
     	Map<String, Object> result = new HashMap<String, Object>();
         if (code != null) result.put(ModelService.RESPONSE_MESSAGE, code);
         if (message != null) result.put(ModelService.SUCCESS_MESSAGE, message);

@@ -42,6 +42,7 @@ import org.ofbiz.webapp.control.RequestHandler;
 import org.ofbiz.webapp.event.EventHandler;
 import org.ofbiz.webapp.event.EventHandlerException;
 
+import com.legeriti.ofbizify.gwt.gwtrpc.util.GwtRpcPayload;
 import com.legeriti.ofbizify.gwt.gwtrpc.util.GwtRpcUtil;
 
 public class GwtRpcServiceEventHandler implements EventHandler {
@@ -200,8 +201,8 @@ public class GwtRpcServiceEventHandler implements EventHandler {
             ServletContext sc = (ServletContext)request.getAttribute("servletContext");
         	RequestDispatcher rd = sc.getRequestDispatcher("/gwtrpc");
 
-        	request.setAttribute("ofbizPayLoad", resultMap);
-        	request.setAttribute("requestPayload", requestPayload);
+        	request.setAttribute(GwtRpcPayload.OFBIZ_PAYLOAD, resultMap);
+        	request.setAttribute(GwtRpcPayload.REQUEST_PAYLOAD, requestPayload);
 
         	try {
         		rd.forward(request, response);

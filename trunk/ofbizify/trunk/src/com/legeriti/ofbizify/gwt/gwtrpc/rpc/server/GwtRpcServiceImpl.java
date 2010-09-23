@@ -34,6 +34,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import javolution.util.FastMap;
+
 import org.ofbiz.base.util.Debug;
 import org.ofbiz.entity.GenericValue;
 
@@ -47,11 +49,12 @@ import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
 import com.google.gwt.user.server.rpc.SerializationPolicyProvider;
 import com.legeriti.ofbizify.gwt.gwtrpc.rpc.client.GwtRpcService;
+import com.legeriti.ofbizify.gwt.gwtrpc.util.GwtRpcPayload;
 
 /**
  * The server side implementation of the RPC service.
  */
-@SuppressWarnings("serial")
+
 public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
 		GwtRpcService, SerializationPolicyProvider {
 	
@@ -227,7 +230,7 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
 		
 		//get the requestPayload from the request attribute instead of reading it from request 
 	    //String requestPayload = readContent(request);
-		String requestPayload = (String)request.getAttribute("requestPayload");
+		String requestPayload = (String)request.getAttribute(GwtRpcPayload.REQUEST_PAYLOAD);
 
 		 // Let subclasses see the serialized request.
 	    //
@@ -353,12 +356,42 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
 		HttpServletRequest request = getThreadLocalRequest();
     	//HttpServletResponse response = getThreadLocalResponse();
 
-		Object ofbizPayLoad = request.getAttribute("ofbizPayLoad");
+		Object ofbizPayLoad = request.getAttribute(GwtRpcPayload.OFBIZ_PAYLOAD);
     	if(Debug.infoOn()) {
 			Debug.logInfo("ofbizPayLoad : " + ofbizPayLoad, module);
 		}
 
-    	result = (HashMap<String, Object>)ofbizPayLoad;
+    	//
+    	String ofbizPayloadClassName = ofbizPayLoad.getClass().getName();
+		if(Debug.infoOn()) {
+			Debug.logInfo("ofbizPayloadClassName : " + ofbizPayloadClassName, module);
+		}
+
+		if("javolution.util.FastMap".equals(ofbizPayloadClassName)) {
+			System.err.println("ofbizPayloadClassName is FastMap");
+			
+			FastMap<String, Object> tmpFastMap = (FastMap<String, Object>)ofbizPayLoad;
+			System.err.println("tmpFastMap -> " + tmpFastMap);
+			
+			HashMap<String, Object> tmpHashMap = new HashMap<String, Object>();
+			
+			Iterator<String> keys = tmpFastMap.keySet().iterator();
+			
+			while(keys.hasNext()) {
+				String key = keys.next();
+				Object value = tmpFastMap.get(key);
+				
+				System.err.println("key -> " + key + " : value -> " + value);
+				tmpHashMap.put(key, value);
+			}
+			
+			System.err.println("tmpHashMap -> " + tmpHashMap);
+			
+			ofbizPayLoad = tmpHashMap;
+		}
+    	//
+
+		result = (HashMap<String, Object>)ofbizPayLoad;
     	if(Debug.infoOn()) {
 			Debug.logInfo("result : " + result, module);
 		}
@@ -366,7 +399,7 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
     	//returnMap.put(ModelService.RESPONSE_MESSAGE, result.get(ModelService.RESPONSE_MESSAGE));
     	
     	//String responseMessage = 
-    	Object resultValue = result.get("payload");
+    	Object resultValue = result.get(GwtRpcPayload.PAYLOAD);
     	if(Debug.infoOn()) {
 			Debug.logInfo("payload : " + resultValue, module);
 		}
@@ -378,7 +411,7 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
     			if(Debug.infoOn()) {
     				Debug.logInfo("resultValue is String", module);
     			}
-    			result.put("payload", resultValue);
+    			result.put(GwtRpcPayload.PAYLOAD, resultValue);
 	    	}
 			else
     		if(resultValue instanceof Map<?, ?>) {
@@ -408,7 +441,7 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
     				servResult = convertToStringMap((GenericValue)resultValue, fields);
     			}
 
-    			result.put("payload", servResult);
+    			result.put(GwtRpcPayload.PAYLOAD, servResult);
     		}
 	    	else
 	    	if(resultValue instanceof List<?>) {
@@ -424,7 +457,7 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
 
 	    		List<HashMap<String, String>> servResult = convertToStringMapList((List<GenericValue>)resultValue, fields);
 
-	    		result.put("payload", servResult);
+	    		result.put(GwtRpcPayload.PAYLOAD, servResult);
 	        }
     		
     		if(Debug.infoOn()) {
