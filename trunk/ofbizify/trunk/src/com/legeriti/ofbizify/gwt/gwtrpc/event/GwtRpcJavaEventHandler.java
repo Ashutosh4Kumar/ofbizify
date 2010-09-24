@@ -38,7 +38,7 @@ import org.ofbiz.webapp.event.EventHandler;
 import org.ofbiz.webapp.event.EventHandlerException;
 
 import com.legeriti.ofbizify.gwt.gwtrpc.util.GwtRpcPayload;
-import com.legeriti.ofbizify.gwt.gwtrpc.util.GwtRpcUtil;
+import com.legeriti.ofbizify.gwt.gwtrpc.util.GwtRpcPayloadUtil;
 
 public class GwtRpcJavaEventHandler implements EventHandler {
 
@@ -57,7 +57,7 @@ public class GwtRpcJavaEventHandler implements EventHandler {
 
     	try {
     		
-    		requestPayload = GwtRpcUtil.getRequestPayload(request);
+    		requestPayload = GwtRpcPayloadUtil.getRequestPayload(request);
     		
     	} catch(IOException ioe) {
     		throw new EventHandlerException("Exception while getting requestPayload",ioe);
@@ -65,7 +65,7 @@ public class GwtRpcJavaEventHandler implements EventHandler {
     		throw new EventHandlerException("Exception while getting requestPayload",se);
     	}
 
-    	HashMap<String, String> gwtParameters = GwtRpcUtil.getParameters(requestPayload);
+    	HashMap<String, String> gwtParameters = GwtRpcPayloadUtil.getParameters(requestPayload);
     	if(Debug.infoOn()) {
     		Debug.logInfo("gwtParameters : " + gwtParameters, module);
     	}

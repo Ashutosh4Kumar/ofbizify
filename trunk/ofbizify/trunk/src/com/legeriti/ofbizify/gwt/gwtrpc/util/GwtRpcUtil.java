@@ -18,52 +18,107 @@
 
 package com.legeriti.ofbizify.gwt.gwtrpc.util;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-
-import org.ofbiz.base.util.Debug;
-
-import com.google.gwt.user.server.rpc.RPC;
-import com.google.gwt.user.server.rpc.RPCRequest;
-import com.google.gwt.user.server.rpc.RPCServletUtils;
+import org.ofbiz.base.util.UtilValidate;
+import org.ofbiz.entity.GenericValue;
 
 public class GwtRpcUtil {
 
     public static final String module = GwtRpcUtil.class.getName();
 
-    public static String getRequestPayload(HttpServletRequest request) throws ServletException, IOException {
+    public static final HashMap<String, String> toStringMap(Map<String, Object> inMap) {
 
-    	String requestPayload = RPCServletUtils.readContentAsUtf8(request, true);
-
-    	if(Debug.infoOn()) {
-    		Debug.logInfo("request : " + request.getRequestURI(), module);
-    		Debug.logInfo("requestPayload : " + requestPayload, module);
-    	}
-
-    	return requestPayload;
-    }
-
-    public static HashMap<String, String> getParameters(String requestPayload) {
-
-    	HashMap<String, String> parameters = null;
+    	HashMap<String, String> outMap = new HashMap<String, String>();
+    	for (Map.Entry<String, Object> entry : inMap.entrySet()) {
+	        outMap.put(entry.getKey(), entry.getValue().toString());
+	    }
+    	return outMap;
+	}
+    
+    public static final HashMap<String, String> toStringMap(Map<String, Object> inMap, String fields) {
     	
-    	RPCRequest rpcRequest = RPC.decodeRequest(requestPayload);
-    	Object[] obj = rpcRequest.getParameters();
-    	parameters = (HashMap<String, String>)obj[0];
+    	HashMap<String, String> outMap = new HashMap<String, String>();
+    	if(UtilValidate.isEmpty(fields)) {
+    		outMap = toStringMap(inMap);
+    	} else {
+    		String[] fieldsArray = fields.split(",");
+    		for(int i=0; i<fieldsArray.length; i++) {
+    			Object obj = inMap.get(fieldsArray[i]);
+    			String value = (obj == null) ? null : obj.toString();  
+    			outMap.put(fieldsArray[i], value);
+			}
+    	}
+    	return outMap;
+	}
 
-    	if(Debug.infoOn()) {
-    		Debug.logInfo("rpc request method : " + rpcRequest.getMethod(), module);
-    		Debug.logInfo("rpc request serialization policy : " + rpcRequest.getSerializationPolicy(), module);
-    		Debug.logInfo("rpc request flags : " + rpcRequest.getFlags(), module);
-    		
-    		Debug.logInfo("rpc request parameters : " + obj, module);
-    		Debug.logInfo("parameters map : " + parameters, module);
+    public static final HashMap<String, String> toStringMap(GenericValue inMap) {
+
+    	HashMap<String, String> outMap = new HashMap<String, String>();
+    	
+    	Map<String, Object> gvMap = inMap.getAllFields();
+		for (Map.Entry<String, Object> entry : gvMap.entrySet()) {
+	        outMap.put(entry.getKey(), entry.getValue().toString());
+	    }
+    	return outMap;
+	}
+    
+    public static final HashMap<String, String> toStringMap(GenericValue inMap, String fields) {
+    	
+    	HashMap<String, String> outMap = new HashMap<String, String>();
+    	if(UtilValidate.isEmpty(fields)) {
+    		outMap = toStringMap(inMap);
+    	} else {
+    		String[] fieldsArray = fields.split(",");
+    		for(int i=0; i<fieldsArray.length; i++) {
+    			outMap.put(fieldsArray[i], inMap.getString(fieldsArray[i]));
+			}
+    	}
+    	return outMap;
+	}
+
+    public static final List<HashMap<String, String>> toStringMapList(List<GenericValue> gvList, String fields) {
+		
+		List<HashMap<String, String>> outList = new ArrayList<HashMap<String, String>>();
+		
+		String[] fieldsArray = null;
+
+    	if(fields != null) {
+    		fieldsArray = fields.split(",");
     	}
 
-    	return parameters;
-    }
+    	for (GenericValue genericValue : gvList) {
+
+    		HashMap<String, String> gv = new HashMap<String, String>();
+    		
+    		if(fieldsArray != null) {
+
+    			for(int i=0; i<fieldsArray.length; i++) {
+    				gv.put(fieldsArray[i], genericValue.getString(fieldsArray[i]));
+    			}
+    			
+    		} else {
+    			
+    			Map<String, Object> gvMap = genericValue.getAllFields();
+    			
+    			Iterator<String> keys = gvMap.keySet().iterator();
+    			
+    			while(keys.hasNext()) {
+    				
+    				String key = keys.next();
+    				gv.put(key, gvMap.get(key).toString());
+    			}
+    			
+    		}
+
+    		outList.add(gv);
+    	}
+
+    	return outList;
+	}
 
 }

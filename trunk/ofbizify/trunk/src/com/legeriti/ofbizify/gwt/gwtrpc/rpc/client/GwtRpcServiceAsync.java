@@ -28,11 +28,4 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface GwtRpcServiceAsync {
 
 	void processRequest(HashMap<String, String> parameters, AsyncCallback<HashMap<String, Object>> callback);
-	
-	/*void processRequest(HashMap<String, String> parameters, AsyncCallback<HashMap<String, String>> callback);
-	
-	void processRequestListString(HashMap<String, String> parameters, AsyncCallback<HashMap<String, List<String>>> callback);
-	
-	void processRequestListMap(HashMap<String, String> parameters, AsyncCallback<HashMap<String, List<HashMap<String, String>>>> callback);*/
-	
 }

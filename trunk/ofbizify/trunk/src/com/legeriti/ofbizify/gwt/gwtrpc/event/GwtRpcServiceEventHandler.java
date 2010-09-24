@@ -32,18 +32,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.ofbiz.base.util.Debug;
+import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.service.DispatchContext;
-import org.ofbiz.service.GenericServiceException;
 import org.ofbiz.service.LocalDispatcher;
-import org.ofbiz.service.ModelService;
 import org.ofbiz.webapp.control.ConfigXMLReader.Event;
 import org.ofbiz.webapp.control.ConfigXMLReader.RequestMap;
 import org.ofbiz.webapp.control.RequestHandler;
 import org.ofbiz.webapp.event.EventHandler;
 import org.ofbiz.webapp.event.EventHandlerException;
+import org.ofbiz.webapp.event.ServiceEventHandler;
 
 import com.legeriti.ofbizify.gwt.gwtrpc.util.GwtRpcPayload;
-import com.legeriti.ofbizify.gwt.gwtrpc.util.GwtRpcUtil;
+import com.legeriti.ofbizify.gwt.gwtrpc.util.GwtRpcPayloadUtil;
 
 public class GwtRpcServiceEventHandler implements EventHandler {
 
@@ -60,18 +60,15 @@ public class GwtRpcServiceEventHandler implements EventHandler {
     	}
 
     	String requestPayload = null;
-
     	try {
-    		
-    		requestPayload = GwtRpcUtil.getRequestPayload(request);
-    		
+    		requestPayload = GwtRpcPayloadUtil.getRequestPayload(request);
     	} catch(IOException ioe) {
     		throw new EventHandlerException("Exception while getting requestPayload",ioe);
     	} catch(ServletException se) {
     		throw new EventHandlerException("Exception while getting requestPayload",se);
     	}
 
-    	HashMap<String, String> gwtParameters = GwtRpcUtil.getParameters(requestPayload);
+    	HashMap<String, String> gwtParameters = GwtRpcPayloadUtil.getParameters(requestPayload);
     	if(Debug.infoOn()) {
     		Debug.logInfo("gwtParameters : " + gwtParameters, module);
     	}
@@ -96,8 +93,9 @@ public class GwtRpcServiceEventHandler implements EventHandler {
 			String eventResult = null;
 			try {
 				
-				eventResult = serviceEventHandler.invoke(new Event("service", "", event.invoke, true), null, request, response);
+				eventResult = serviceEventHandler.invoke(new Event("service", event.path, event.invoke, true), null, request, response);
 				if(Debug.infoOn()) {
+					Debug.logInfo("event.path : " + event.path, module);
 	    			Debug.logInfo("eventResult : " + eventResult, module);
 	    		}
 				
@@ -124,7 +122,7 @@ public class GwtRpcServiceEventHandler implements EventHandler {
             	throw new EventHandlerException("dispatch context is null");
             }
             
-            ModelService model = null;
+            /*ModelService model = null;
             
             try {
             	model = dctx.getModelService(serviceName);
@@ -137,7 +135,7 @@ public class GwtRpcServiceEventHandler implements EventHandler {
 
             if (null == model) {
             	throw new EventHandlerException("service model is null");
-            }
+            }*/
             
             /*List<String> implicitVariables = new ArrayList<String>();
             implicitVariables.add("userLogin");
@@ -148,54 +146,15 @@ public class GwtRpcServiceEventHandler implements EventHandler {
             //implicitVariables.add("successMessageList");
             //implicitVariables.add("errorMessage");
             //implicitVariables.add("errorMessageList");
-            
-            //Set<String> outParams = model.getOutParamNames();
-            //Iterator<String> iterOP = outParams.iterator();
 
-            /*Map<String, Object> serviceResult = new HashMap<String, Object>();
+            Map<String, Object> resultMap = null;
 
-            while(iterOP.hasNext()) {
-            	
-            	String opName = iterOP.next();
-
-            	if(!implicitVariables.contains(opName)) {
-            		
-                	Object opValue = request.getAttribute(opName);
-
-                	serviceResult.put(opName, opValue);
-                	request.removeAttribute(opName);
-
-                	if(Debug.infoOn()) {
-            			Debug.logInfo("opName : " + opName + " - opValue : " + opValue, module);
-            		}
-                	
-                	//request.setAttribute("result", opValue);
-            	}
-            }*/
-
-            /*if(serviceResult.size() == 0) {
-            	request.setAttribute("ofbizPayLoad", null);
+            if(UtilValidate.isEmpty(event.path) || ServiceEventHandler.SYNC.equals(event.path)) {
+            	 resultMap = (Map<String, Object>) request.getAttribute("result");
             } else {
-            	
-            	if(serviceResult.size() == 1) {
-            		
-            		Iterator<String> iter1 = serviceResult.keySet().iterator();
-            		
-            		String key = null;
-            		
-            		if(iter1.hasNext()) {
-            			key = iter1.next();
-            		}
-            		
-            		request.setAttribute("ofbizPayLoad", serviceResult.get(key));
+            	resultMap = GwtRpcPayloadUtil.returnSuccess();
+            }
 
-            	} else {
-            		
-            		request.setAttribute("ofbizPayLoad", serviceResult);
-            	}
-            }*/
-            
-            Map<String, Object> resultMap = (Map<String, Object>) request.getAttribute("result");
             System.err.println("service resultMap -> " + resultMap);
 
             ServletContext sc = (ServletContext)request.getAttribute("servletContext");

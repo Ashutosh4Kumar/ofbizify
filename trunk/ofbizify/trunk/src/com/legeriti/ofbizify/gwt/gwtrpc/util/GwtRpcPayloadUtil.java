@@ -17,99 +17,72 @@
 
 package com.legeriti.ofbizify.gwt.gwtrpc.util;
 
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javolution.util.FastMap;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 
-import org.ofbiz.base.util.UtilGenerics;
-import org.ofbiz.service.ModelService;
+import org.ofbiz.base.util.Debug;
 import org.ofbiz.service.ServiceUtil;
+
+import com.google.gwt.user.server.rpc.RPC;
+import com.google.gwt.user.server.rpc.RPCRequest;
+import com.google.gwt.user.server.rpc.RPCServletUtils;
 
 public class GwtRpcPayloadUtil extends ServiceUtil {
 
     public static final String module = GwtRpcPayloadUtil.class.getName();
 
-    public static Map<String, Object> returnSuccess() {
-        return returnMessage(ModelService.RESPOND_SUCCESS, null);
-    }
-    
-    public static Map<String, Object> returnSuccess(String successMessage) {
-        return returnMessage(ModelService.RESPOND_SUCCESS, successMessage);
+    public static String getRequestPayload(HttpServletRequest request) throws ServletException, IOException {
+
+    	String requestPayload = RPCServletUtils.readContentAsUtf8(request, true);
+
+    	if(Debug.infoOn()) {
+    		Debug.logInfo("request : " + request.getRequestURI(), module);
+    		Debug.logInfo("requestPayload : " + requestPayload, module);
+    	}
+
+    	return requestPayload;
     }
 
-    public static Map<String, Object> returnSuccess(List<String> successMessageList) {
-        Map<String, Object> result = returnMessage(ModelService.RESPOND_SUCCESS, null);
-        result.put(ModelService.SUCCESS_MESSAGE_LIST, successMessageList);
-        return result;
+    public static HashMap<String, String> getParameters(String requestPayload) {
+
+    	HashMap<String, String> parameters = null;
+    	
+    	RPCRequest rpcRequest = RPC.decodeRequest(requestPayload);
+    	Object[] obj = rpcRequest.getParameters();
+    	parameters = (HashMap<String, String>)obj[0];
+
+    	if(Debug.infoOn()) {
+    		Debug.logInfo("rpc request method : " + rpcRequest.getMethod(), module);
+    		Debug.logInfo("rpc request serialization policy : " + rpcRequest.getSerializationPolicy(), module);
+    		Debug.logInfo("rpc request flags : " + rpcRequest.getFlags(), module);
+    		
+    		Debug.logInfo("rpc request parameters : " + obj, module);
+    		Debug.logInfo("parameters map : " + parameters, module);
+    	}
+
+    	return parameters;
     }
-    
-    public static Map<String, Object> returnSuccessWithPayload(Object payload, String successMessage) {
-    	Map<String, Object> result = returnSuccess(successMessage);
-    	result.put(GwtRpcPayload.PAYLOAD, payload);
-        return result;
-    }
-    
+
     public static Map<String, Object> returnSuccessWithPayload(Object payload) {
     	Map<String, Object> result = returnSuccess();
     	result.put(GwtRpcPayload.PAYLOAD, payload);
         return result;
     }
-    
+
+    public static Map<String, Object> returnSuccessWithPayload(Object payload, String successMessage) {
+    	Map<String, Object> result = returnSuccess(successMessage);
+    	result.put(GwtRpcPayload.PAYLOAD, payload);
+        return result;
+    }
+
     public static Map<String, Object> returnSuccessWithPayload(Object payload, List<String> successMessageList) {
     	Map<String, Object> result = returnSuccess(successMessageList);
     	result.put(GwtRpcPayload.PAYLOAD, payload);
         return result;
     }
-    
-    public static Map<String, Object> returnMessage(String code, String message) {
-
-    	//Map<String, Object> result = FastMap.newInstance();
-    	Map<String, Object> result = new HashMap<String, Object>();
-        if (code != null) result.put(ModelService.RESPONSE_MESSAGE, code);
-        if (message != null) result.put(ModelService.SUCCESS_MESSAGE, message);
-        return result;
-    }
-    
-    public static Map<String, Object> returnProblem(String returnType, String errorMessage, List<? extends Object> errorMessageList, Map<String, ? extends Object> errorMessageMap, Map<String, ? extends Object> nestedResult) {
-        //Map<String, Object> result = FastMap.newInstance();
-    	Map<String, Object> result = new HashMap<String, Object>();
-        result.put(ModelService.RESPONSE_MESSAGE, returnType);
-        if (errorMessage != null) {
-            result.put(ModelService.ERROR_MESSAGE, errorMessage);
-        }
-
-        List<Object> errorList = new LinkedList<Object>();
-        if (errorMessageList != null) {
-            errorList.addAll(errorMessageList);
-        }
-
-        Map<String, Object> errorMap = FastMap.newInstance();
-        if (errorMessageMap != null) {
-            errorMap.putAll(errorMessageMap);
-        }
-
-        if (nestedResult != null) {
-            if (nestedResult.get(ModelService.ERROR_MESSAGE) != null) {
-                errorList.add(nestedResult.get(ModelService.ERROR_MESSAGE));
-            }
-            if (nestedResult.get(ModelService.ERROR_MESSAGE_LIST) != null) {
-                errorList.addAll(UtilGenerics.checkList(nestedResult.get(ModelService.ERROR_MESSAGE_LIST)));
-            }
-            if (nestedResult.get(ModelService.ERROR_MESSAGE_MAP) != null) {
-                errorMap.putAll(UtilGenerics.<String, Object>checkMap(nestedResult.get(ModelService.ERROR_MESSAGE_MAP)));
-            }
-        }
-
-        if (errorList.size() > 0) {
-            result.put(ModelService.ERROR_MESSAGE_LIST, errorList);
-        }
-        if (errorMap.size() > 0) {
-            result.put(ModelService.ERROR_MESSAGE_MAP, errorMap);
-        }
-        return result;
-    }
-
 }

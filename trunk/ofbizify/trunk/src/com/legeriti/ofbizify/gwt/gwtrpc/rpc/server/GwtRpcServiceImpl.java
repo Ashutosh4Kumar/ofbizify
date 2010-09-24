@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -50,6 +49,7 @@ import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
 import com.google.gwt.user.server.rpc.SerializationPolicyProvider;
 import com.legeriti.ofbizify.gwt.gwtrpc.rpc.client.GwtRpcService;
 import com.legeriti.ofbizify.gwt.gwtrpc.util.GwtRpcPayload;
+import com.legeriti.ofbizify.gwt.gwtrpc.util.GwtRpcUtil;
 
 /**
  * The server side implementation of the RPC service.
@@ -249,104 +249,9 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
 	    //
 	    writeResponse(request, response, responsePayload);
 	}
-	
-	/*public HashMap<String, List<String>> processRequestListString(HashMap<String, String> parameters) {
-	}
-
-	public HashMap<String, List<HashMap<String, String>>> processRequestListMap(HashMap<String, String> parameters) {
-		return new HashMap<String, List<HashMap<String,String>>>();
-	}
-	 */
-
-	public HashMap<String, String> convertToStringMap(Map<String, Object> inMap) {
-
-		HashMap<String, String> outMap = new HashMap<String, String>();
-
-		Iterator<String> keys = inMap.keySet().iterator();
-
-		while(keys.hasNext()) {
-			String key = keys.next();
-			outMap.put(key, (String)inMap.get(key));
-		}
-
-		return outMap;
-	}
-
-	public HashMap<String, String> convertToStringMap(GenericValue gv, String fields) {
-
-		HashMap<String, String> outMap = new HashMap<String, String>();
-		
-		String[] fieldsArray = null;
-
-		if(fields != null) {
-    		fieldsArray = fields.split(",");
-    	}
-
-		if(fieldsArray != null) {
-
-			for(int i=0; i<fieldsArray.length; i++) {
-				outMap.put(fieldsArray[i], gv.getString(fieldsArray[i]));
-			}
-			
-		} else {
-
-			Map<String, Object> gvMap = gv.getAllFields();
-
-			Iterator<String> keys = gvMap.keySet().iterator();
-
-			while(keys.hasNext()) {
-				
-				String key = keys.next();
-				outMap.put(key, gvMap.get(key).toString());
-			}
-		}
-		
-		return outMap;
-	}
-
-	public List<HashMap<String, String>> convertToStringMapList(List<GenericValue> gvList, String fields) {
-		
-		List<HashMap<String, String>> outList = new ArrayList<HashMap<String, String>>();
-		
-		String[] fieldsArray = null;
-
-    	if(fields != null) {
-    		fieldsArray = fields.split(",");
-    	}
-
-    	for (GenericValue genericValue : gvList) {
-
-    		HashMap<String, String> gv = new HashMap<String, String>();
-    		
-    		if(fieldsArray != null) {
-
-    			for(int i=0; i<fieldsArray.length; i++) {
-    				gv.put(fieldsArray[i], genericValue.getString(fieldsArray[i]));
-    			}
-    			
-    		} else {
-    			
-    			Map<String, Object> gvMap = genericValue.getAllFields();
-    			
-    			Iterator<String> keys = gvMap.keySet().iterator();
-    			
-    			while(keys.hasNext()) {
-    				
-    				String key = keys.next();
-    				gv.put(key, gvMap.get(key).toString());
-    			}
-    			
-    		}
-
-    		outList.add(gv);
-    	}
-
-    	return outList;
-	}
 
 	public HashMap<String, Object> processRequest(HashMap<String, String> parameters) {
 
-		//HashMap<String, Object> returnMap = new HashMap<String, Object>();
 		HashMap<String, Object> result = null;
 		
 		if(Debug.infoOn()) {
@@ -361,44 +266,33 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
 			Debug.logInfo("ofbizPayLoad : " + ofbizPayLoad, module);
 		}
 
-    	//
     	String ofbizPayloadClassName = ofbizPayLoad.getClass().getName();
 		if(Debug.infoOn()) {
 			Debug.logInfo("ofbizPayloadClassName : " + ofbizPayloadClassName, module);
 		}
 
 		if("javolution.util.FastMap".equals(ofbizPayloadClassName)) {
-			System.err.println("ofbizPayloadClassName is FastMap");
-			
+
 			FastMap<String, Object> tmpFastMap = (FastMap<String, Object>)ofbizPayLoad;
-			System.err.println("tmpFastMap -> " + tmpFastMap);
-			
 			HashMap<String, Object> tmpHashMap = new HashMap<String, Object>();
 			
 			Iterator<String> keys = tmpFastMap.keySet().iterator();
-			
+
 			while(keys.hasNext()) {
 				String key = keys.next();
 				Object value = tmpFastMap.get(key);
-				
-				System.err.println("key -> " + key + " : value -> " + value);
+
 				tmpHashMap.put(key, value);
 			}
-			
-			System.err.println("tmpHashMap -> " + tmpHashMap);
-			
+
 			ofbizPayLoad = tmpHashMap;
 		}
-    	//
 
 		result = (HashMap<String, Object>)ofbizPayLoad;
     	if(Debug.infoOn()) {
 			Debug.logInfo("result : " + result, module);
 		}
-    	
-    	//returnMap.put(ModelService.RESPONSE_MESSAGE, result.get(ModelService.RESPONSE_MESSAGE));
-    	
-    	//String responseMessage = 
+
     	Object resultValue = result.get(GwtRpcPayload.PAYLOAD);
     	if(Debug.infoOn()) {
 			Debug.logInfo("payload : " + resultValue, module);
@@ -428,7 +322,7 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
     			HashMap<String, String> servResult = null;
     			
     			if("javolution.util.FastMap".equals(className) || "java.util.HashMap".equals(className)) {
-    				servResult = convertToStringMap((Map<String, Object>)resultValue);
+    				servResult = GwtRpcUtil.toStringMap((Map<String, Object>)resultValue);
     			}
     			else
     			if("org.ofbiz.entity.GenericValue".equals(className)) {
@@ -438,7 +332,7 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
         				Debug.logInfo("fields : " + fields, module);
         			}
     				
-    				servResult = convertToStringMap((GenericValue)resultValue, fields);
+    				servResult = GwtRpcUtil.toStringMap((GenericValue)resultValue, fields);
     			}
 
     			result.put(GwtRpcPayload.PAYLOAD, servResult);
@@ -455,7 +349,7 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
     				Debug.logInfo("fields : " + fields, module);
     			}
 
-	    		List<HashMap<String, String>> servResult = convertToStringMapList((List<GenericValue>)resultValue, fields);
+	    		List<HashMap<String, String>> servResult = GwtRpcUtil.toStringMapList((List<GenericValue>)resultValue, fields);
 
 	    		result.put(GwtRpcPayload.PAYLOAD, servResult);
 	        }
@@ -466,9 +360,6 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
 
     	}
 
-    	//String mode = parameters.get("mode");
-
-    	//return returnMap;
     	return result;
 	}
 
