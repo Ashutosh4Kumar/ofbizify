@@ -1,28 +1,33 @@
 == How to make ofbizify calls ==
 
 Ofbizify has :
+ 1. Event Handlers
+  * GwtRpcGroovyEventHandler(gwtgroovy) - To call groovy scripts
+  * GwtRpcJavaEventHandler' (gwtjava)   - To call java events
+  * GwtRpcServiceEventHandler (gwtservice) - To call services
 
-Event Handlers<br/>
-* `GwtRpcGroovyEventHandler` (gwtgroovy) - To call groovy scripts}}}<br/>
-* 'GwtRpcJavaEventHandler' (gwtjava)   - To call java events}}}<br/>
-* {{{GwtRpcServiceEventHandler (gwtservice) - To call services}}}<br/>
+ 2. GwtRpcServiceImpl (RemoteServiceServlet)
 
-GwtRpcServiceImpl (RemoteServiceServlet)
-
-Utility classes<br/>
-* GwtRpcPayload<br/>
-* GwtRpcPayloadUtil<br/>
-* GwtRpcUtil<br/>
+ 3. Utility classes
+  * GwtRpcPayload
+  * GwtRpcPayloadUtil
+  * GwtRpcUtil
 
 <br/>
-
 ===Creating your ofbiz gwt component :===
 1) Create ofbiz component using the ant script
+
 2) Add the below entry to the component's build.xml local.class.path
-<fileset dir="../../hot-deploy/ofbizify/build/lib" includes="*.jar"/>
+
+{{{<fileset dir="../../hot-deploy/ofbizify/build/lib" includes="*.jar"/>}}}
+
 3) Include the ofbizify controller in your controller
-<include location="component://ofbizify/webapp/ofbizify/WEB-INF/controller.xml"/>
+
+{{{<include location="component://ofbizify/webapp/ofbizify/WEB-INF/controller.xml"/>}}}
+
 4) Add the below servlet mapping to your component web.xml
+
+{{{
 <servlet>
  <servlet-name>gwtrpc</servlet-name>
  <servlet-class>com.legeriti.ofbizify.gwt.gwtrpc.rpc.server.GwtRpcServiceImpl</servlet-class>
@@ -32,14 +37,10 @@ Utility classes<br/>
  <servlet-name>gwtrpc</servlet-name>
  <url-pattern>/gwtrpc</url-pattern>
 </servlet-mapping>
+}}}
+
 5) Create the GWT Web application using the GWT Eclipse plugin
+
 6) Copy the ofbizify-client.jar into the gwt application's lib directory
+
 7) Copy the gwt generated files to your components webapp/yourcomponent directory
-
-
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
