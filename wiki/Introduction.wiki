@@ -16,10 +16,10 @@ There are 3 ways to have communication in GWT :<br/>
 
 I choose to integrate OFBiz & GWT using the native GWT-RPC protocol as it was much easier to use and productive, as java objects are passed around, then instead of using XML & JSON and parsing the messages.
 
-The best thing using ofbizify is, the ofbiz component structure stays the same, you put all your request in controller file, invoke your Java Events, Groovy scripts, Services as you use to.
+The best thing using ofbizify is, the ofbiz component structure stays the same, you put all your request in controller file, invoke your Java Events, Groovy scripts, Services as you use to and get back the response in gwt app.
 
-I have done with the basic required code, but yes, definitely there can be many improvements/enhancements done, but just to let you all know that using ofbizify, you can create GWT apps and integrate it with Apache OFBiz
+And yes, apart from building pure gwt application you can also embed gwt widget/component into existing screens/ftl pages.
 
-To know more about how to configure ofbizify, how to call java events, groovy scripts and services, download the code & example, you can visit the project homepage at http://code.google.com/p/ofbizify/
+To know more about how to configure ofbizify, how to call java events, groovy scripts and services, download the code & example, you can visit the project wiki at http://code.google.com/p/ofbizify/wiki/GettingStarted
 
 and guys let me know if there is anything to improve the project, you can email me at abdullah.shaikh.1@gmail.com
