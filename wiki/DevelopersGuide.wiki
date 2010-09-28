@@ -1,20 +1,18 @@
-#How to make ofbizify calls
-
-= Introduction =
+== How to make ofbizify calls ==
 
 Ofbizify has :
 
-1) Event Handlers<br/>
-#{{{GwtRpcGroovyEventHandler (gwtgroovy) - To call groovy scripts}}}<br/>
-#{{{GwtRpcJavaEventHandler (gwtjava)   - To call java events}}}<br/>
-#{{{GwtRpcServiceEventHandler (gwtservice) - To call services}}}<br/>
+Event Handlers<br/>
+* `GwtRpcGroovyEventHandler` (gwtgroovy) - To call groovy scripts}}}<br/>
+* 'GwtRpcJavaEventHandler' (gwtjava)   - To call java events}}}<br/>
+* {{{GwtRpcServiceEventHandler (gwtservice) - To call services}}}<br/>
 
-2) GwtRpcServiceImpl (RemoteServiceServlet)
+GwtRpcServiceImpl (RemoteServiceServlet)
 
-3) Utility classes<br/>
-#{{{GwtRpcPayload}}}<br/>
-#{{{GwtRpcPayloadUtil}}}<br/>
-#{{{GwtRpcUtil}}}<br/>
+Utility classes<br/>
+* GwtRpcPayload<br/>
+* GwtRpcPayloadUtil<br/>
+* GwtRpcUtil<br/>
 
 <br/>
 
