@@ -18,7 +18,6 @@
 package com.legeriti.ofbizify.gwt.gwtrpc.rpc.client;
 
 import java.util.HashMap;
-import java.util.List;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -27,8 +26,5 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public interface GwtRpcServiceAsync {
 
-	//void processRequest(HashMap<String, String> parameters, AsyncCallback<HashMap<String, String>> callback);
 	void processRequest(HashMap<String, String> parameters, AsyncCallback<HashMap<String, Object>> callback);
-	
-	void processRequestList(HashMap<String, String> parameters, AsyncCallback<HashMap<String, List<HashMap<String, String>>>> callback);
 }

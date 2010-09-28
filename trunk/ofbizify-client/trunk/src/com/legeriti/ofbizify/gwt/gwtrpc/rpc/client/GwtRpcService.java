@@ -18,19 +18,13 @@
 package com.legeriti.ofbizify.gwt.gwtrpc.rpc.client;
 
 import java.util.HashMap;
-import java.util.List;
 
 import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
  * The client side stub for the RPC service.
  */
-@RemoteServiceRelativePath("gwtrpc")
 public interface GwtRpcService extends RemoteService {
 
-	//HashMap<String, String> processRequest(HashMap<String, String> parameters);
 	HashMap<String, Object> processRequest(HashMap<String, String> parameters);
-	
-	HashMap<String, List<HashMap<String, String>>> processRequestList(HashMap<String, String> parameters);
 }
