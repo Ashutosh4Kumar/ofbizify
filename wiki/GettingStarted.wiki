@@ -3,102 +3,16 @@
 
 1) GWT (SDK + Eclipse Plugin) - [http://code.google.com/webtoolkit/], you can set the Web Toolkit in Eclipse by going to<br/>Window -> Preferences -> Google -> Web Toolkit
 
-Steps :<br/>
-1) Check out ofbizify to hot-deploy from 
-   https://ofbizify.googlecode.com/svn/trunk/ofbizify/trunk
+2) Check out ofbizify to hot-deploy from 
+   http://ofbizify.googlecode.com/svn/trunk/ofbizify/trunk
 <br/>
-2) Check out ofbizify client (outside ofbiz, just need it to create ofbizify-client.jar, which will be needed when you create your own custom ofbiz component),  from
-   https://ofbizify.googlecode.com/svn/trunk/ofbizify-client/trunk
+Note: To create your own ofbiz gwt webapp, you need ofbizify-client.jar, which is included in the ofbizify's lib directory.
+
+To run the sample webapp:
+1) Check out ofbizify_example.zip, this zip contains custom ofbiz component, which you need to unzip to hot-deploy to run the example, from
+   http://ofbizify.googlecode.com/svn/trunk/ofbizify_example.zip
 <br/>
-3) Check out ofbizify_example.zip, this zip contains custom ofbiz component, which you need to unzip to hot-deploy to run the example, from
-   https://ofbizify.googlecode.com/svn/trunk/ofbizify_example.zip
-<br/>
+2) Install seed data
+3) Build & start OFBiz and hit http://localhost:8080/ofbizifyexample/Ofbizifyexample.html
 
-4) Add gwt-user.jar, you can find it in gwt folder, from the gwt zip file that you downloaded from the gwt site, and ofbizify-client.jar, you need to create this jar file from ofbizify-client project, by exporting it as jar from eclipse, also make sure to include the source files as well in the jar file, to the hot-deploy/ofbizify component's lib folder.
-<br/>
-
-5) As currently the sample application only works with the "DemoCustomer" party, you need to add the DemoCustomer party to "FullAdmin" security group, and also need to add "Primary Phone Number" as Contact purpose to already existing phone number and add a new number as "Main mobile phone number"
-<br/>
-
-6) Build & start OFBiz, point your browser to http://localhost:8080/ofbizifyexample/Ofbizifyexample.html
-<br/><br/>
-
-The data you see in the table below is from OFBiz, you can click on the record to populate the form, and can make changes and clicking "Save Changes" will result in updating of record in ofbiz, you can verify if from the backend, also the table gets refreshed.
-
-Currently the sample application is not much impressive, and works only for "DemoCustomer" record and has only the read & update functionality, but the basic purpose was to show the integration, and also I have tried to make it work with the existing data, that's why the additional step 5 is required, but soon I will create a sample application with all the CRUD operations and having its own entities and demo data.<br/><br/>
-There are 3 Event Handlers in ofbizify:<br/>
-1) {{{GwtRpcGroovyEventHandler (gwtgroovy) - To call groovy scripts}}}<br/>
-2) {{{GwtRpcJavaEventHandler (gwtjava)   - To call java events}}}<br/>
-3) {{{GwtRpcServiceEventHandler (gwtservice) - To call services}}}<br/>
-<br/>
-To use this handlers you will need to include the ofbizify controller to your application controller
-<br/>
-*How to make requests :*
-<br/>
-Configuration :
-<br/>
-1) Add the below servlet mapping to web.xml
-
-<servlet>
-<servlet-name>gwtrpc</servlet-name>
-<servlet-class>com.legeriti.ofbizify.gwt.gwtrpc.rpc.server.GwtRpcServiceImpl</servlet-class>
-</servlet>
-
-<servlet-mapping>
-<servlet-name>gwtrpc</servlet-name>
-<url-pattern>/gwtrpc</url-pattern>
-</servlet-mapping>
-
-After configuring you will be able to make request from GWT front-end
-
-Steps :
-
-1) Add required request mappings to your controller.xml
-
-For e.g.
-
-<request-map uri="countries">
-<event type="gwtgroovy" path="component://<your compponent>/webapp/<your webapp>/WEB-INF/actions/" invoke="Countries.groovy"/>
-<response name="success" type="none"/>
-<response name="error" type="none"/>
-</request-map>
-
-The above example is using groovy script, you can use java event or services as well.
-
-2) From the GWT front end, to invoke the above request, you need to code as below.
-
-{{{
-//parameters that needs to be sent to the server
-HashMap<String, String> parameters = new HashMap<String, String>();
-parameters.put("fields", "geoId,geoName");
-
-Note : fields parameter is used when you need only the specific columns to be fetched instead of all the columns, here we will get only the "geoId" & "geoName" columns, as we need only these two, not passing this parameter will result to all the collumns being fetched.
-
-AsyncCallback<HashMap<String, Object>> callback = new AsyncCallback<HashMap<String, Object>>() {
-
-     public void onFailure(Throwable caught) {
-          Window.alert("SERVER_ERROR " + caught.toString());
-     }
-
-     public void onSuccess(HashMap<String, Object> result) {
-
-          //ServiceUtil is the class in ofbizify-client.jar, to check service results
-          if(ServiceUtil.isSuccess(result)) {
-               if(result.get("result") instanceof List) {
-                    List<HashMap<String, String>> countries = (List<HashMap<String,String>>)result.get("result");
-//do something with the countries, populate the drop down
-               }
-          }
-     }
-};
-
-String GET_COUNTRIES = "/<your webapp>/control/countries";
-
-GwtRpcServiceAsync gwtrcpService = GWT.create(GwtRpcService.class);
-ServiceDefTarget endpoint = (ServiceDefTarget) gwtrcpService;
-
-endpoint.setServiceEntryPoint(GET_COUNTRIES);
-gwtrcpService.processRequest(parameters, callback);
-}}}
-
-In the same way you can use any gwtrpc handlers.
+Note : The ofbizify example contains the ofbiz component and the gwt files. To look at the example's gwt code, checkout ofbizifyexample from http://ofbizify.googlecode.com/svn/trunk/ofbizify
