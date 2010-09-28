@@ -15,4 +15,4 @@ To run the sample webapp:
 2) Install seed data
 3) Build & start OFBiz and hit http://localhost:8080/ofbizifyexample/Ofbizifyexample.html
 
-Note : The ofbizify example contains the ofbiz component and the gwt files. To look at the example's gwt code, checkout ofbizifyexample from http://ofbizify.googlecode.com/svn/trunk/ofbizify
+Note : The ofbizify example contains the ofbiz component and the gwt files. To look at the example's gwt code, checkout ofbizifyexample from http://ofbizify.googlecode.com/svn/trunk/ofbizifyexample
