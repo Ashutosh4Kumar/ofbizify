@@ -36,7 +36,6 @@ import javax.servlet.http.HttpServletResponse;
 import javolution.util.FastMap;
 
 import org.ofbiz.base.util.Debug;
-import org.ofbiz.entity.GenericValue;
 
 import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
 import com.google.gwt.user.client.rpc.SerializationException;
@@ -48,8 +47,9 @@ import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
 import com.google.gwt.user.server.rpc.SerializationPolicyProvider;
 import com.legeriti.ofbizify.gwt.gwtrpc.rpc.client.GwtRpcService;
+import com.legeriti.ofbizify.gwt.gwtrpc.serializer.AbstractPayloadSerializer;
+import com.legeriti.ofbizify.gwt.gwtrpc.serializer.PayloadSerializer;
 import com.legeriti.ofbizify.gwt.gwtrpc.util.GwtRpcPayload;
-import com.legeriti.ofbizify.gwt.gwtrpc.util.GwtRpcUtil;
 
 /**
  * The server side implementation of the RPC service.
@@ -249,7 +249,8 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
 	    //
 	    writeResponse(request, response, responsePayload);
 	}
-
+	
+	//--
 	public HashMap<String, Object> processRequest(HashMap<String, String> parameters) {
 
 		HashMap<String, Object> result = null;
@@ -300,14 +301,6 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
 
     	if(resultValue != null) {
 
-    		if(resultValue instanceof String) {
-    			
-    			if(Debug.infoOn()) {
-    				Debug.logInfo("resultValue is String", module);
-    			}
-    			result.put(GwtRpcPayload.PAYLOAD, resultValue);
-	    	}
-			else
     		if(resultValue instanceof Map<?, ?>) {
     			
     			if(Debug.infoOn()) {
@@ -319,13 +312,21 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
     				Debug.logInfo("resultValue class : " + className, module);
     			}
 
-    			HashMap<String, String> servResult = null;
-    			
-    			if("javolution.util.FastMap".equals(className) || "java.util.HashMap".equals(className)) {
-    				servResult = GwtRpcUtil.toStringMap((Map<String, Object>)resultValue);
-    			}
-    			else
-    			if("org.ofbiz.entity.GenericValue".equals(className)) {
+    			Object servResult = null;
+
+    			PayloadSerializer serializer = AbstractPayloadSerializer.getCachedPayloadSerializer(className);
+
+    			if(serializer != null) {
+        			try {
+        				servResult = serializer.serialize(resultValue);
+        			} catch(SerializationException se) {
+        				System.err.println("se -> " + se);
+        			}
+        		} else {
+        			servResult = resultValue;
+        		}
+
+    			/*if("org.ofbiz.entity.GenericValue".equals(className)) {
 
     				String fields = parameters.get("fields");
     				if(Debug.infoOn()) {
@@ -333,9 +334,9 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
         			}
     				
     				servResult = GwtRpcUtil.toStringMap((GenericValue)resultValue, fields);
-    			}
+    			}*/
 
-    			result.put(GwtRpcPayload.PAYLOAD, servResult);
+        		result.put(GwtRpcPayload.PAYLOAD, servResult);
     		}
 	    	else
 	    	if(resultValue instanceof List<?>) {
@@ -348,8 +349,28 @@ public class GwtRpcServiceImpl extends AbstractRemoteServiceServlet implements
 	    		if(Debug.infoOn()) {
     				Debug.logInfo("fields : " + fields, module);
     			}
+	    		
+	    		//
+	    		List<?> lgv = (List<?>)resultValue;
 
-	    		List<HashMap<String, String>> servResult = GwtRpcUtil.toStringMapList((List<GenericValue>)resultValue, fields);
+	    		String className = lgv.getClass().getName();
+    			if(Debug.infoOn()) {
+    				Debug.logInfo("resultValue (objects) class : " + className, module);
+    			}
+
+    			Object servResult = null;
+    			
+	    		PayloadSerializer serializer = AbstractPayloadSerializer.getCachedPayloadSerializer(className);
+
+	    		if(serializer != null) {
+        			try {
+        				servResult = serializer.serialize(resultValue);
+        			} catch(SerializationException se) {
+        				System.err.println("se -> " + se);
+        			}
+        		} else {
+        			servResult = resultValue;
+        		}
 
 	    		result.put(GwtRpcPayload.PAYLOAD, servResult);
 	        }
