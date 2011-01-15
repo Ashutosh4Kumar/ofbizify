@@ -17,6 +17,7 @@
 
 package com.ofbizify.gwt.gwtrpc.client;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -29,8 +30,8 @@ public interface GwtRpcService extends RemoteService {
 	HashMap<String, Object> processRequest(HashMap<String, String> parameters);
 	
 	//dummy method to get the generation of rpc file properly
-	//String dummy1(HashMap<String, String> parameters);
-	//HashMap<String, String> dummy2(HashMap<String, String> parameters);
-	//ArrayList<HashMap<String, String>> dummy3(HashMap<String, String> parameters);
-	//ArrayList<HashMap<String, Object>> dummy4(HashMap<String, String> parameters);
+	String dummy1(HashMap<String, String> parameters);
+	HashMap<String, String> dummy2(HashMap<String, String> parameters);
+	ArrayList<HashMap<String, String>> dummy3(HashMap<String, String> parameters);
+	ArrayList<HashMap<String, Object>> dummy4(HashMap<String, String> parameters);
 }
