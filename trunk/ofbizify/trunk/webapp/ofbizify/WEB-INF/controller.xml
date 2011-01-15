@@ -9,9 +9,9 @@
     <description>ofbizify Component Site Configuration File</description>
     <owner></owner>
 
-	<handler name="gwtgroovy" type="request" class="com.legeriti.ofbizify.gwt.gwtrpc.event.GwtRpcGroovyEventHandler"/>
-	<handler name="gwtservice" type="request" class="com.legeriti.ofbizify.gwt.gwtrpc.event.GwtRpcServiceEventHandler"/>
-	<handler name="gwtjava" type="request" class="com.legeriti.ofbizify.gwt.gwtrpc.event.GwtRpcJavaEventHandler"/>
+	<handler name="gwtgroovy" type="request" class="com.ofbizify.gwt.gwtrpc.event.GwtRpcGroovyEventHandler"/>
+	<handler name="gwtservice" type="request" class="com.ofbizify.gwt.gwtrpc.event.GwtRpcServiceEventHandler"/>
+	<handler name="gwtjava" type="request" class="com.ofbizify.gwt.gwtrpc.event.GwtRpcJavaEventHandler"/>
 
     <!-- Events to run on every request before security (chains exempt) -->
     <!--
