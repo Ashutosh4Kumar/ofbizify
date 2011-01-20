@@ -46,5 +46,9 @@ public class ServiceUtil {
 		String responseMessage = (String) result.get("responseMessage");
 		return RESPOND_ERROR.equals(responseMessage);
 	}
+	
+	public static Object getPayload(HashMap<String, Object> result) {
+		return result.get("payload");
+	}
 
 }
